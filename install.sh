@@ -11,7 +11,7 @@ curl -fsSL https://tailscale.com/install.sh | sh
 
 sudo apt update
 
-sudo apt install -y git curl neofetch btop htop nodejs npm cmake raspberrypi-kernel-headers bc mokutil build-essential libelf-dev linux-headers-`uname -r` lsb-release tailscale
+sudo apt install -y git curl neofetch btop htop nodejs npm cmake raspberrypi-kernel-headers lsb-release tailscale dkms
 
 # Change node version
 echo "Setting NodeJS version to 18."
@@ -26,9 +26,11 @@ echo "Installing WiFi adapter drivers."
 
 git clone https://github.com/aircrack-ng/rtl8812au.git 
 cd rtl8812au
-sudo make
-sudo make install 
+
+sudo make dkms_install
 
 cd ../
-sudo rm -r rtl8812au #cleanup
+sudo rm -r rtl8812au 
 
+#Download car-pi repo
+git clone https://github.com/romtec123/car-pi
