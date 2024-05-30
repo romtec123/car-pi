@@ -15,6 +15,7 @@
     "express": "^4.19.2",
     "fs": "^0.0.1-security",
     "node-fetch": "^3.3.2",
+    "onoff": "^6.0.3",
     "path": "^0.12.7"
   }
 }
