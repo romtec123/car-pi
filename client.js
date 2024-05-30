@@ -1,34 +1,14 @@
 import fetch from 'node-fetch';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { getConfig } from './configUtil.js'
 
 // Configuration file setup
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const configDir = path.join(__dirname, 'config');
-const configFilePath = path.join(configDir, 'cl.json');
 const defaultConfig = {
     serverUrl: 'http://localhost:3123/heartbeat',
 };
 
-// Ensure config directory exists
-if (!fs.existsSync(configDir)) {
-    fs.mkdirSync(configDir);
-}
+const config = await getConfig("cl", defaultConfig)
 
-// Ensure config file exists, if not create with default config and exit
-if (!fs.existsSync(configFilePath)) {
-    fs.writeFileSync(configFilePath, JSON.stringify(defaultConfig, null, 2));
-    console.log(`Default config file created at ${configFilePath}. Please edit the file and restart the client.`);
-    process.exit(0);
-}
-
-// Read config file
-const config = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
-
-
+console.log(config)
 async function sendHeartbeat() {
     const statistics = {
         // Replace this with actual statistics

@@ -5,9 +5,7 @@
 
 import express from 'express';
 import bodyParser from 'body-parser';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { getConfig } from './configUtil.js'
 
 const defaultConfig = {
     port: 3123
@@ -15,26 +13,9 @@ const defaultConfig = {
 
 const app = express();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const configDir = path.join(__dirname, 'config');
-const configFilePath = path.join(configDir, 'sv.json');
-
-// Ensure config directory exists
-if (!fs.existsSync(configDir)) {
-    fs.mkdirSync(configDir);
-}
-
-// Ensure config file exists, if not create with default config and exit
-if (!fs.existsSync(configFilePath)) {
-    fs.writeFileSync(configFilePath, JSON.stringify(defaultConfig, null, 2));
-    console.log(`Default config file created at ${configFilePath}. Please edit the file and restart the server.`);
-    process.exit(0);
-}
 
 // Read config file
-const config = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
+const config = await getConfig("sv", defaultConfig)
 
 // Middleware to parse JSON
 app.use(bodyParser.json());
