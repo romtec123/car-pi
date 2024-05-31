@@ -9,6 +9,7 @@ let defaultConfig = {
     gpioPin3: 534,
     gpioPin4: 535,
 }
+// gpio pin numbers based on output from: cat /sys/kernel/debug/gpio
 
 const config = await getConfig("dw", defaultConfig)
 
