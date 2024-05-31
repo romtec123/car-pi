@@ -25,6 +25,13 @@ export async function getConfig(filename, defaultConfig) {
     // Read config file
     let config = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
 
+    for (var key in defaultConfig) {
+        if (!config.hasOwnProperty(key)) {
+          config[key] = defaultConfig[key]
+        }
+    }
+
+    fs.writeFileSync(configFilePath, JSON.stringify(config, null, 2));
     return config
 
 }
