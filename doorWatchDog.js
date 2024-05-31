@@ -3,18 +3,25 @@ import { getConfig } from './configUtil.js'
 
 let defaultConfig = {
     webHookURL: "",
-    deBounceWait: 500,
-    gpioPin: 529,
+    deBounceWait: 100,
+    gpioPin1: 529,
+    gpioPin2: 539,
+    gpioPin3: 534,
+    gpioPin4: 535,
 }
 
 const config = await getConfig("dw", defaultConfig)
 
-const doorSensor = new Gpio(config.gpioPin, 'in', 'both'); // GPIO pin 17, change as needed.
+const doorSensor1 = new Gpio(config.gpioPin1, 'in', 'both'); // GPIO pin 11, Door sensor.
+const doorSensor2 = new Gpio(config.gpioPin2, 'in', 'both'); // GPIO pin 13
+const doorSensor3 = new Gpio(config.gpioPin3, 'in', 'both'); // GPIO pin 15
+const doorSensor4 = new Gpio(config.gpioPin4, 'in', 'both'); // GPIO pin 16
 // Watching for any change on the pin, i am a using an optocoupler with the 12v door switch circut
+
 
 let doorValue = 1; // 1 = Closed, 0 = open
 // Function to handle door open/close events
-doorSensor.watch((err, value) => {
+doorSensor1.watch((err, value) => {
 
     if (err) {
         console.error('Error reading GPIO pin:', err);
@@ -38,6 +45,7 @@ doorSensor.watch((err, value) => {
     }
 
 });
+
 
 // Clean up on exit
 process.on('SIGINT', () => {
