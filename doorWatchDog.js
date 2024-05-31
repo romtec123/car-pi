@@ -50,7 +50,10 @@ doorSensor1.watch((err, value) => {
 
 // Clean up on exit
 process.on('SIGINT', () => {
-    doorSensor.unexport();
+    doorSensor1.unexport();
+    doorSensor2.unexport();
+    doorSensor3.unexport();
+    doorSensor4.unexport();
     console.log('Exiting...');
     process.exit();
 });
