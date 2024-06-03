@@ -11,7 +11,7 @@ curl -fsSL https://tailscale.com/install.sh | sh
 
 sudo apt update
 
-sudo apt install -y git curl neofetch btop htop nodejs npm cmake raspberrypi-kernel-headers lsb-release tailscale dkms rfkill bc
+sudo apt install -y git curl neofetch btop htop nodejs npm cmake raspberrypi-kernel-headers lsb-release tailscale dkms rfkill bc fswebcam ffmpeg
 
 # Change node version
 echo "Setting NodeJS version to 18."
@@ -32,3 +32,8 @@ git clone https://github.com/morrownr/8821au-20210708.git
 cd 8821au-20210708
 
 sudo ./install-driver.sh
+
+echo "Installation finished!"
+
+echo "Disable built in wifi by modifying /boot/firmware/config.txt"
+echo "Authenticate tailscale with tailscale up --force-reauth --accept-routes"
