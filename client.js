@@ -74,7 +74,7 @@ async function sendHeartbeat() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(statistics)
-        });
+        }).catch(err => console.log('Could not POST heartbeat:', err));
 
         if (!response.ok) {
             throw new Error(`Server error: ${response.statusText}`);
