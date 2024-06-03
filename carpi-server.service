@@ -1,0 +1,14 @@
+[Unit]
+Description=CarPi Server
+
+[Service]
+ExecStart=/home/j/car-pi/server.js
+Restart=always
+User=j
+# Note Debian/Ubuntu uses 'nogroup', RHEL/Fedora uses 'nobody'
+Group=j
+Environment=PATH=/usr/bin:/usr/local/bin
+WorkingDirectory=/home/j/car-pi
+
+[Install]
+WantedBy=multi-user.target

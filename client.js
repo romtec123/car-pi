@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import fetch from 'node-fetch';
 import os from 'os';
 import { Gpio } from 'onoff';
@@ -39,14 +41,14 @@ if(!noGpio) {
 
             if(doorValue == 0){
                 doorValue = 1
-                console.log("Door closed! time: " + new Date())
+                console.log("Door closed! time: " + new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'}))
             }
 
         } else {
 
             if(doorValue == 1) {
                 doorValue = 0
-                console.log("Door opened! time: " + new Date())
+                console.log("Door opened! time: " + new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'}))
             }
 
         }
@@ -61,7 +63,7 @@ if(!noGpio) {
 async function sendHeartbeat() {
     const statistics = {
         authToken: config.authToken,
-        timestamp: new Date(),
+        timestamp: new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'}),
         status: 'ALIVE',
         doorValue: isNaN(doorValue) ? "Unknown" : doorValue,
         
@@ -88,12 +90,33 @@ setInterval(sendHeartbeat, 30000)
 
 
 // Clean up on exit
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
     if(!noGpio) {
         sensor1.unexport();
         sensor2.unexport();
         sensor3.unexport();
         sensor4.unexport();
+    }
+
+    const shutdownData = {
+        authToken: config.authToken,
+        timestamp: new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'}),
+        status: 'SHUTTING DOWN',
+    };
+
+    try {
+        const response = await fetch(config.serverUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(shutdownData)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.statusText}`);
+        }
+
+    } catch (error) {
+        console.error('Error sending heartbeat:', error);
     }
     
     console.log('Exiting...');

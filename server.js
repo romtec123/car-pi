@@ -6,7 +6,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import { getConfig } from './configUtil.js'
-
+let stats = {}
 const defaultConfig = {
     port: 3123,
     authToken: ""
@@ -25,7 +25,9 @@ app.use(bodyParser.json());
 app.post('/heartbeat', (req, res) => {
     const data = req.body;
     if(data.authToken === config.authToken){
-        console.log('Received heartbeat:', data);
+        console.log('Received heartbeat');
+        stats.status = data.status
+        stats.timestamp = data.timestamp
         res.status(200).send('Heartbeat received');
     } else {
         res.status(401).send('unauthorized');
@@ -36,13 +38,19 @@ app.post('/api/sensorActivate', (req, res) => {
     const data = req.body;
 
     if(data.authToken === config.authToken){
-        console.log(`Door sensor triggered! time: ${new Date}`)
+        console.log(`Door sensor triggered! time: ${new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'})}`)
         console.log(data)
         res.status(200).send('OK')
     } else {
         res.status(401).send('unauthorized');
     }
     
+})
+
+app.get('/', (req, res) => {
+    let data = "***Car Pi Status***<br>Last Status: "
+    data += `${stats.status ?? "n/a"}<br>Last Update: ${stats.timestamp ?? "n/a"}`
+    res.send(data)
 })
 
 app.listen(config.port, () => {
