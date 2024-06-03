@@ -60,7 +60,7 @@ if(!noGpio) {
 
 async function sendHeartbeat() {
     const statistics = {
-        // Replace this with actual statistics
+        authToken: config.authToken,
         timestamp: new Date(),
         status: 'ALIVE',
         doorValue: isNaN(doorValue) ? "Unknown" : doorValue,

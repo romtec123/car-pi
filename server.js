@@ -24,8 +24,12 @@ app.use(bodyParser.json());
 // Heartbeat endpoint
 app.post('/heartbeat', (req, res) => {
     const data = req.body;
-    console.log('Received heartbeat:', data);
-    res.status(200).send('Heartbeat received');
+    if(data.authToken === config.authToken){
+        console.log('Received heartbeat:', data);
+        res.status(200).send('Heartbeat received');
+    } else {
+        res.status(401).send('unauthorized');
+    }
 });
 
 app.post('/api/sensorActivate', (req, res) => {
@@ -34,6 +38,7 @@ app.post('/api/sensorActivate', (req, res) => {
     if(data.authToken === config.authToken){
         console.log(`Door sensor triggered! time: ${new Date}`)
         console.log(data)
+        res.status(200).send('OK')
     } else {
         res.status(401).send('unauthorized');
     }
