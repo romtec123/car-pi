@@ -24,6 +24,7 @@ echo "Node is now version 18."
 #Download car-pi repo
 git clone https://github.com/romtec123/car-pi
 
+chmod +x car-pi/client.js car-pi/server.js
 
 # Install wifi adapter drivers
 echo "Installing WiFi adapter drivers."

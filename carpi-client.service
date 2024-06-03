@@ -2,12 +2,11 @@
 Description=CarPi Client
 
 [Service]
-ExecStart=/home/j/car-pi/client.js
+ExecStart=/usr/bin/node /home/j/car-pi/client.js
 Restart=always
 User=j
 # Note Debian/Ubuntu uses 'nogroup', RHEL/Fedora uses 'nobody'
 Group=j
-Environment=PATH=/usr/bin:/usr/local/bin
 WorkingDirectory=/home/j/car-pi
 
 [Install]
