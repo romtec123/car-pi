@@ -11,7 +11,7 @@ curl -fsSL https://tailscale.com/install.sh | sh
 
 sudo apt update
 
-sudo apt install -y git curl neofetch btop htop nodejs npm cmake raspberrypi-kernel-headers lsb-release tailscale dkms rfkill bc fswebcam ffmpeg
+sudo apt install -y git curl neofetch btop htop nodejs npm cmake raspberrypi-kernel-headers lsb-release tailscale dkms rfkill bc fswebcam ffmpeg v4l-utils
 
 # Change node version
 echo "Setting NodeJS version to 18."
