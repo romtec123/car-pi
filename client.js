@@ -4,7 +4,7 @@ import { Gpio } from 'onoff';
 import { getConfig } from './configUtil.js';
 
 let defaultConfig = {
-    webHookURL: "",
+    authToken: "",
     serverUrl: 'http://localhost:3123/heartbeat',
     deBounceWait: 100,
     gpioPin1: 529,
@@ -39,14 +39,14 @@ if(!noGpio) {
 
             if(doorValue == 0){
                 doorValue = 1
-                console.log("Door closed!" + new Date())
+                console.log("Door closed! time: " + new Date())
             }
 
         } else {
 
             if(doorValue == 1) {
                 doorValue = 0
-                console.log("Door Opened! Time: " + new Date())
+                console.log("Door opened! time: " + new Date())
             }
 
         }
@@ -78,8 +78,6 @@ async function sendHeartbeat() {
             throw new Error(`Server error: ${response.statusText}`);
         }
 
-        const data = await response.text();
-        console.log('Server response:', data);
     } catch (error) {
         console.error('Error sending heartbeat:', error);
     }

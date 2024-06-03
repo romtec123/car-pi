@@ -8,7 +8,8 @@ import bodyParser from 'body-parser';
 import { getConfig } from './configUtil.js'
 
 const defaultConfig = {
-    port: 3123
+    port: 3123,
+    authToken: ""
 };
 
 const app = express();
@@ -26,6 +27,18 @@ app.post('/heartbeat', (req, res) => {
     console.log('Received heartbeat:', data);
     res.status(200).send('Heartbeat received');
 });
+
+app.post('/api/sensorActivate', (req, res) => {
+    const data = req.body;
+
+    if(data.authToken === config.authToken){
+        console.log(`Door sensor triggered! time: ${new Date}`)
+        console.log(data)
+    } else {
+        res.status(401).send('unauthorized');
+    }
+    
+})
 
 app.listen(config.port, () => {
     console.log(`Server is running on http://localhost:${config.port}`);
