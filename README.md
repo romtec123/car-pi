@@ -6,7 +6,7 @@ The codebase is pretty scattered and unorganized while I prototype, it will be i
 # Implementation
 Inside of a project box, I have the following items:
 
-Raspberry Pi 3 Model B
+Raspberry Pi 4 Model B
 
 12v battery voltage cutoff to prevent draining my battery
 
@@ -16,3 +16,4 @@ Raspberry Pi 3 Model B
 
 Wifi card with SMA connector and high gain antenna
 
+![setup](https://i.imgur.com/1LOmGVK.jpeg)
