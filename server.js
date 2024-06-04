@@ -26,8 +26,9 @@ app.post('/heartbeat', (req, res) => {
     const data = req.body;
     if(data.authToken === config.authToken){
         console.log('Received heartbeat');
-        stats.status = data.status
-        stats.timestamp = data.timestamp
+        if (data.status) stats.status = data.status
+        if (data.timestamp) stats.timestamp = data.timestamp
+        if (data.lastOpened && data.lastOpened != -1) stats.lastOpened = new Date(data.lastOpened).toLocaleString('en', {timeZone: 'America/Los_Angeles'})
         res.status(200).send('Heartbeat received');
     } else {
         res.status(401).send('unauthorized');
@@ -50,6 +51,7 @@ app.post('/api/sensorActivate', (req, res) => {
 app.get('/', (req, res) => {
     let data = "***Car Pi Status***<br>Last Status: "
     data += `${stats.status ?? "n/a"}<br>Last Update: ${stats.timestamp ?? "n/a"}`
+    data += `<br>Last Door Open: ${stats.lastOpened ?? "n/a"}`
     res.send(data)
 })
 

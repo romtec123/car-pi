@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import os from 'os';
 import { Gpio } from 'onoff';
 import { getConfig } from './configUtil.js';
-
+let lastOpened = -1;
 let defaultConfig = {
     authToken: "",
     serverUrl: 'http://localhost:3123/heartbeat',
@@ -48,6 +48,7 @@ if(!noGpio) {
 
             if(doorValue == 1) {
                 doorValue = 0
+                lastOpened = Date.now()
                 console.log("Door opened! time: " + new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'}))
             }
 
@@ -66,6 +67,7 @@ async function sendHeartbeat() {
         timestamp: new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'}),
         status: 'ALIVE',
         doorValue: isNaN(doorValue) ? "Unknown" : doorValue,
+        lastOpened,
         
     };
 
@@ -83,6 +85,7 @@ async function sendHeartbeat() {
     } catch (error) {
         console.error('Error sending heartbeat:', error);
     }
+    
 }
 
 // Call the function to send the heartbeat
