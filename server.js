@@ -22,7 +22,7 @@ const config = await getConfig("sv", defaultConfig)
 app.use(bodyParser.json());
 
 // Heartbeat endpoint
-app.post('/heartbeat', (req, res) => {
+app.post('/api/heartbeat', (req, res) => {
     const data = req.body;
     if(data.authToken === config.authToken){
         console.log('Received heartbeat');
@@ -41,6 +41,7 @@ app.post('/api/sensorActivate', (req, res) => {
     if(data.authToken === config.authToken){
         console.log(`Door sensor triggered! time: ${new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'})}`)
         console.log(data)
+        if (data.lastOpened && data.lastOpened != -1) stats.lastOpened = new Date(data.lastOpened).toLocaleString('en', {timeZone: 'America/Los_Angeles'})
         res.status(200).send('OK')
     } else {
         res.status(401).send('unauthorized');
