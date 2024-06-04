@@ -6,10 +6,14 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import { getConfig } from './configUtil.js'
+import fetch from 'node-fetch';
+
 let stats = {sensors: [{}, {}, {}, {}]}
 const defaultConfig = {
     port: 3123,
-    authToken: ""
+    authToken: "",
+    discordSensorNotif: false,
+    discordWebHookURL: "",
 };
 
 const app = express();
@@ -42,8 +46,12 @@ app.post('/api/sensorActivate', (req, res) => {
         console.log(`Door sensor triggered! time: ${new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'})}`)
         console.log(data)
         if (data.lastOpened && data.lastOpened != -1) stats.lastOpened = new Date(data.lastOpened).toLocaleString('en', {timeZone: 'America/Los_Angeles'})
-        if(data.sensorID && !isNaN(data.doorValue)) {
+        if (data.sensorID && !isNaN(data.doorValue)) {
             stats.sensors[data.sensorID-1].doorValue = data.doorValue
+        }
+        if (config.discordSensorNotif) {
+            let ts = Math.round(Date.now()/1000)
+            sendDiscordNotif(`Sensor ID \`${data.sensorID}\` is now \`${!isNaN(data.doorValue) && data.doorValue == 0 ? "OPEN" : "CLOSED"}\`\n<t:${ts}:R> <t:${ts}:f>`)
         }
         res.status(200).send('OK')
     } else {
@@ -63,3 +71,28 @@ app.get('/', (req, res) => {
 app.listen(config.port, () => {
     console.log(`Server is running on http://localhost:${config.port}`);
 });
+
+
+async function sendDiscordNotif(msg) {
+    if(!msg) return;
+    try {
+        let response = await fetch(config.discordWebHookURL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                // the username to be displayed
+                username: 'Car Door Watchdog',
+                content:
+                  `@everyone\n***DOOR SENSOR TRIGGERED***\nMessage: ${msg}`,
+              }),
+        }).catch(err => console.log('Could not POST sensor activation:', err));
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.statusText}`);
+        }
+
+    } catch (error) {
+        console.error('Error sending heartbeat:', error);
+    }
+
+}

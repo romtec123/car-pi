@@ -7,6 +7,7 @@ import fetch from 'node-fetch';
 import os from 'os';
 import { Gpio } from 'onoff';
 import { getConfig } from './configUtil.js';
+
 let lastOpened = -1;
 let defaultConfig = {
     authToken: "",
