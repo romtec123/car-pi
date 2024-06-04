@@ -1,4 +1,7 @@
-#!/usr/bin/env node
+/**
+ * client.js
+ * Sends heartbeat sensor notifications to the server
+*/
 
 import fetch from 'node-fetch';
 import os from 'os';
@@ -7,7 +10,7 @@ import { getConfig } from './configUtil.js';
 let lastOpened = -1;
 let defaultConfig = {
     authToken: "",
-    serverUrl: 'http://localhost:3123/heartbeat',
+    serverUrl: 'http://localhost:3123',
     deBounceWait: 100,
     gpioPin1: 529,
     gpioPin2: 539,
@@ -19,10 +22,10 @@ let defaultConfig = {
 const config = await getConfig("cl", defaultConfig)
 
 //Prevent calling onoff on dev env
-let noGpio = false;
-if(os.platform() == "win32" || os.platform() == "darwin") noGpio = true
+let useGpio = true;
+if(os.platform() == "win32" || os.platform() == "darwin") useGpio = false
 
-if(!noGpio) {
+if(useGpio) {
     var sensor1 = new Gpio(config.gpioPin1, 'in', 'both'); // GPIO pin 11, Door sensor.
     var sensor2 = new Gpio(config.gpioPin2, 'in', 'both'); // GPIO pin 13
     var sensor3 = new Gpio(config.gpioPin3, 'in', 'both'); // GPIO pin 15
@@ -42,6 +45,7 @@ if(!noGpio) {
             if(doorValue == 0){
                 doorValue = 1
                 console.log("Door closed! time: " + new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'}))
+                sendSensorAlert({authToken: config.authToken, sensorID: 1, doorValue, lastOpened, msg: "Door closed"})
             }
 
         } else {
@@ -50,14 +54,13 @@ if(!noGpio) {
                 doorValue = 0
                 lastOpened = Date.now()
                 console.log("Door opened! time: " + new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'}))
+                sendSensorAlert({authToken: config.authToken, sensorID: 1, doorValue, lastOpened, msg: "Door opened"})
             }
 
         }
 
     });
 }
-
-
 
 
 
@@ -72,7 +75,7 @@ async function sendHeartbeat() {
     };
 
     try {
-        const response = await fetch(config.serverUrl, {
+        const response = await fetch(config.serverUrl + "/api/heartbeat", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(statistics)
@@ -92,9 +95,31 @@ async function sendHeartbeat() {
 setInterval(sendHeartbeat, 30000)
 
 
+async function sendSensorAlert(data) {
+    if(!data) return
+    if(!data.sensorID) return
+    if(!data.authToken) return
+
+    try {
+        const response = await fetch(config.serverUrl + "/api/sensorActivate", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).catch(err => console.log('Could not POST sensor activation:', err));
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.statusText}`);
+        }
+
+    } catch (error) {
+        console.error('Error sending heartbeat:', error);
+    }
+
+}
+
 // Clean up on exit
 process.on('SIGINT', async () => {
-    if(!noGpio) {
+    if(useGpio) {
         sensor1.unexport();
         sensor2.unexport();
         sensor3.unexport();
@@ -108,11 +133,11 @@ process.on('SIGINT', async () => {
     };
 
     try {
-        const response = await fetch(config.serverUrl, {
+        const response = await fetch(config.serverUrl + "/api/heartbeat", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(shutdownData)
-        });
+        }).catch(err => console.log('Could not POST heartbeat:', err));
 
         if (!response.ok) {
             throw new Error(`Server error: ${response.statusText}`);
