@@ -3,11 +3,11 @@
 
 #Update packages & install new ones
 echo "Updating and installing packages..."
-sudo apt update -y && sudo apt upgrade -y
 
-# Install tailscale repo and other packages from apt
+sudo apt update -y && sudo apt upgrade -y
 sudo apt install -y git curl neofetch btop htop nodejs npm cmake raspberrypi-kernel-headers lsb-release dkms rfkill bc fswebcam ffmpeg v4l-utils
 
+# Install tailscale
 curl -fsSL https://tailscale.com/install.sh | sh
 
 # Change node version
