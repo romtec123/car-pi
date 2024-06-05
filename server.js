@@ -29,7 +29,6 @@ app.use(bodyParser.json());
 app.post('/api/heartbeat', (req, res) => {
     const data = req.body;
     if(data.authToken === config.authToken){
-        console.log('Received heartbeat');
         if (data.status) stats.status = data.status
         if (data.timestamp) stats.timestamp = data.timestamp
         if (data.lastOpened && data.lastOpened != -1) stats.lastOpened = new Date(data.lastOpened).toLocaleString('en', {timeZone: 'America/Los_Angeles'})
