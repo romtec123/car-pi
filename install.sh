@@ -22,14 +22,13 @@ echo "Node is now version 18."
 git clone https://github.com/romtec123/car-pi
 
 # Install wifi adapter drivers
-echo "Installing WiFi adapter drivers."
+echo "Downloading WiFi adapter drivers."
 
 git clone https://github.com/morrownr/8821au-20210708.git
-cd 8821au-20210708
 
-sudo ./install-driver.sh
 
 echo "Installation finished!"
 
 echo "Disable built in wifi by modifying /boot/firmware/config.txt"
 echo "Authenticate tailscale with tailscale up --force-reauth --accept-routes"
+echo "Install wifi adapter drivers with install_driver.sh"
