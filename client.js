@@ -2,11 +2,12 @@
  * client.js
  * Sends heartbeat sensor notifications to the server
 */
-
+import fs from 'fs';
 import fetch from 'node-fetch';
 import os from 'os';
 import { Gpio } from 'onoff';
 import { getConfig } from './configUtil.js';
+const tempPath = '/sys/class/thermal/thermal_zone0/temp';
 
 let lastOpened = -1;
 let defaultConfig = {
@@ -66,12 +67,21 @@ if(useGpio) {
 
 
 async function sendHeartbeat() {
+    let temp = 0
+    getTemperature((err, temperature) => {
+        if (err) {
+            temp = -1
+        } else {
+            temp = temperature
+        }
+    });
     const statistics = {
         authToken: config.authToken,
         timestamp: new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'}),
         status: 'ALIVE',
         doorValue: isNaN(doorValue) ? "Unknown" : doorValue,
         lastOpened,
+        temp,
         
     };
 
@@ -118,8 +128,31 @@ async function sendSensorAlert(data) {
 
 }
 
+function getTemperature(callback) {
+    fs.access(tempPath, fs.constants.F_OK, (err) => {
+        if (err) {
+            // File doesn't exist, not running on a Raspberry Pi
+            callback('Not a raspberry pi', null);
+        } else {
+            fs.readFile(path, 'utf8', (err, data) => {
+                if (err) {
+                    callback(err, null);
+                } else {
+                    // Temperature is returned in millidegrees Celsius
+                    const temperature = parseFloat(data) / 1000;
+                    callback(null, temperature);
+                }
+            });
+        }
+    });
+}
+
+
 // Clean up on exit
-process.on('SIGINT', async () => {
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+
+async function shutdown() {
     if(useGpio) {
         sensor1.unexport();
         sensor2.unexport();
@@ -150,4 +183,4 @@ process.on('SIGINT', async () => {
     
     console.log('Exiting...');
     process.exit();
-});
+};
