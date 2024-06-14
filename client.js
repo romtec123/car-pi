@@ -69,7 +69,7 @@ if(useGpio) {
 async function sendHeartbeat() {
     let temp = 0
     if(fs.existsSync(tempPath)) {
-        const tempDataRaw = fs.readFileSync(path, 'utf8');
+        const tempDataRaw = fs.readFileSync(tempPath, 'utf8');
         temp = parseFloat(data) / 1000;
     }
     const statistics = {
