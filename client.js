@@ -68,13 +68,10 @@ if(useGpio) {
 
 async function sendHeartbeat() {
     let temp = 0
-    getTemperature((err, temperature) => {
-        if (err) {
-            temp = -1
-        } else {
-            temp = temperature
-        }
-    });
+    if(fs.existsSync(tempPath)) {
+        const tempDataRaw = fs.readFileSync(path, 'utf8');
+        temp = parseFloat(data) / 1000;
+    }
     const statistics = {
         authToken: config.authToken,
         timestamp: new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'}),
@@ -126,25 +123,6 @@ async function sendSensorAlert(data) {
         console.error('Error sending heartbeat:', error);
     }
 
-}
-
-function getTemperature(callback) {
-    fs.access(tempPath, fs.constants.F_OK, (err) => {
-        if (err) {
-            // File doesn't exist, not running on a Raspberry Pi
-            callback('Not a raspberry pi', null);
-        } else {
-            fs.readFile(tempPath, 'utf8', (err, data) => {
-                if (err) {
-                    callback(err, null);
-                } else {
-                    // Temperature is returned in millidegrees Celsius
-                    const temperature = parseFloat(data) / 1000;
-                    callback(null, temperature);
-                }
-            });
-        }
-    });
 }
 
 
