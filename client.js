@@ -134,7 +134,7 @@ function getTemperature(callback) {
             // File doesn't exist, not running on a Raspberry Pi
             callback('Not a raspberry pi', null);
         } else {
-            fs.readFile(path, 'utf8', (err, data) => {
+            fs.readFile(tempPath, 'utf8', (err, data) => {
                 if (err) {
                     callback(err, null);
                 } else {
