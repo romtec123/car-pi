@@ -32,6 +32,7 @@ app.post('/api/heartbeat', (req, res) => {
         if (data.status) stats.status = data.status
         if (data.timestamp) stats.timestamp = data.timestamp
         if (data.lastOpened && data.lastOpened != -1) stats.lastOpened = new Date(data.lastOpened).toLocaleString('en', {timeZone: 'America/Los_Angeles'})
+        if(data.temp) stats.lastTemp = data.temp
         res.status(200).send('Heartbeat received');
     } else {
         res.status(401).send('unauthorized');
@@ -63,6 +64,7 @@ app.get('/', (req, res) => {
     let data = "***Car Pi Status***<br>Last Status: "
     data += `${stats.status ?? "n/a"}<br>Last Update: ${stats.timestamp ?? "n/a"}`
     data += `<br>Door Open: ${!isNaN(stats.sensors[0].doorValue) && stats.sensors[0].doorValue == 0 ? "Yes" : "No"}<br>Last Door Open: ${stats.lastOpened ?? "n/a"}<br>`
+    data += `<br>CPU Temp: ${stats.lastTemp ?? "n/a"}<br>`
     data += '<meta http-equiv="refresh" content="30">'
     res.send(data)
 })
