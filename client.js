@@ -100,7 +100,7 @@ async function sendHeartbeat() {
 }
 
 // Call the function to send the heartbeat
-setInterval(sendHeartbeat, 30000)
+setInterval(sendHeartbeat, 120000)
 
 
 async function sendSensorAlert(data) {
