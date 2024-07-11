@@ -13,6 +13,8 @@ let lastOpened = -1;
 let defaultConfig = {
     authToken: "",
     serverUrl: 'http://localhost:3123',
+    gpsFilePath: "/tmp/locGPS",
+    heartbeatTimerMS: 60000,
     deBounceWait: 100,
     gpioPin1: 529,
     gpioPin2: 539,
@@ -67,11 +69,29 @@ if(useGpio) {
 
 
 async function sendHeartbeat() {
-    let temp = 0
+    //Get CPU Temperature
+    let temp = 0;
     if(fs.existsSync(tempPath)) {
         const tempDataRaw = fs.readFileSync(tempPath, 'utf8');
         temp = parseFloat(tempDataRaw) / 1000;
     }
+
+    //Get GPS Data from configured directory
+    let position = {lat: "N/A", lng: "N/A", spd: "N/A"};
+    if(fs.existsSync(config.gpsFilePath)) {
+        const tempGPSRaw = fs.readFileSync(config.gpsFilePath, 'utf8');
+        let gpsData
+
+        try {
+            gpsData = JSON.parse(tempGPSRaw)
+
+            if(!gpsData.error && gpsData.location)
+                position = {lat: gpsData.location.lat ?? "N/A", lng: gpsData.location.lng ?? "N/A", spd: gpsData.spd ?? "N/A"}
+        } catch(err) {
+            console.log(err)
+        }
+    }
+    
     const statistics = {
         authToken: config.authToken,
         timestamp: new Date().toLocaleString('en', {timeZone: 'America/Los_Angeles'}),
@@ -79,6 +99,7 @@ async function sendHeartbeat() {
         doorValue: isNaN(doorValue) ? "Unknown" : doorValue,
         lastOpened,
         temp,
+        position,
         
     };
 
@@ -100,7 +121,7 @@ async function sendHeartbeat() {
 }
 
 // Call the function to send the heartbeat
-setInterval(sendHeartbeat, 120000)
+setInterval(sendHeartbeat, config.heartbeatTimerMS)
 
 
 async function sendSensorAlert(data) {

@@ -33,6 +33,7 @@ app.post('/api/heartbeat', (req, res) => {
         if (data.timestamp) stats.timestamp = data.timestamp
         if (data.lastOpened && data.lastOpened != -1) stats.lastOpened = new Date(data.lastOpened).toLocaleString('en', {timeZone: 'America/Los_Angeles'})
         if(data.temp) stats.lastTemp = data.temp
+        if(data.position) stats.position = data.position
         res.status(200).send('Heartbeat received');
     } else {
         res.status(401).send('unauthorized');
@@ -65,6 +66,9 @@ app.get('/', (req, res) => {
     data += `${stats.status ?? "n/a"}<br>Last Update: ${stats.timestamp ?? "n/a"}`
     data += `<br>Door Open: ${!isNaN(stats.sensors[0].doorValue) && stats.sensors[0].doorValue == 0 ? "Yes" : "No"}<br>Last Door Open: ${stats.lastOpened ?? "n/a"}<br>`
     data += `CPU Temp: ${stats.lastTemp ?? "n/a"}<br>`
+    data += `Speed: ${getSpeedMPH(stats.position.spd)}<br>`
+    if(req.query.showPos == "true") data += `Position: ${stats.position.lat}, ${stats.position.lng}<br>`
+    else data += `<a href="/?showPos=true">Show Position</a><br>`
     data += '<meta http-equiv="refresh" content="30">'
     res.send(data)
 })
@@ -96,4 +100,9 @@ async function sendDiscordNotif(msg) {
         console.error('Error sending heartbeat:', error);
     }
 
+}
+
+function getSpeedMPH(speedKMH) {
+    if(isNaN(speedKMH)) return "N/A"
+    return speedKMH * 0.621371;
 }
