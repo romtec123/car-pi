@@ -1,13 +1,16 @@
 #!/bin/bash
 
-# Get the GPS data using gpspipe and redirect errors to /dev/null
-gpsdata=$(gpspipe -w -n 10 2>/dev/null | grep -m 1 -Eo '"class":"TPV".*')
+# Set timeout duration in seconds
+TIMEOUT_DURATION=10
+
+# Get the GPS data using gpspipe with timeout and redirect errors to /dev/null
+gpsdata=$(timeout $TIMEOUT_DURATION gpspipe -w -n 10 2>/dev/null | grep -m 1 -Eo '"class":"TPV".*')
 
 # Check if gpsdata is empty
 if [ -z "$gpsdata" ]; then
   echo '{
     "error": "No GPS data available"
-  }'
+}'
   exit 1
 fi
 
@@ -23,7 +26,7 @@ speed=$(echo $gpsdata | jq -r '.speed // empty' 2>/dev/null)
 if [ -z "$latitude" ] || [ -z "$longitude" ]; then
   echo '{
     "error": "Incomplete GPS data"
-  }'
+}'
   exit 1
 fi
 
@@ -47,7 +50,7 @@ json_output=$(jq -n \
     },
     "spd": ($spd | tonumber),
     "type": $typ
-  }')
+}')
 
 # Print the JSON output
 echo "$json_output"

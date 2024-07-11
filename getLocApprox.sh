@@ -8,7 +8,7 @@ KEY=
 if [ -z "$KEY" ]; then
   echo '{
     "error": "API key not set"
-  }'
+}'
   exit 1
 fi
 
@@ -39,7 +39,7 @@ END {
 if [ -z "$wifi_json" ] || [[ "$wifi_json" == *'{"wifiAccessPoints":[]}'* ]]; then
   echo '{
     "error": "No WiFi data available"
-  }'
+}'
   exit 1
 fi
 
@@ -50,7 +50,7 @@ location_data=$(echo "$wifi_json" | curl -s -d @- -H "Content-Type: application/
 if [ -z "$location_data" ]; then
   echo '{
     "error": "No location data available"
-  }'
+}'
   exit 1
 fi
 
