@@ -35,9 +35,18 @@ app.post('/api/heartbeat', (req, res) => {
         if (data.lastOpened && data.lastOpened != -1) stats.lastOpened = new Date(data.lastOpened).toLocaleString('en', {timeZone: 'America/Los_Angeles'});
         if(data.temp) stats.lastTemp = data.temp;
         if(data.position && !isNaN(data.position.lat)){
-            posHistory.push({time: Date.now(), position: data.position});
-            if(posHistory.length > 1000) posHistory.shift();
-            stats.position = data.position;
+            let distance = -1;
+            if(posHistory.length > 0) {
+                distance = calculateDistance(posHistory[posHistory.length-1].lat, posHistory[posHistory.length-1].lng, data.position.lat, data.position.lng);
+            }
+            console.log(distance)
+            if(posHistory.length < 1 || distance > 50) { //add to history if initial value or 50ft away from last position
+                posHistory.push({time: Date.now(), position: data.position});
+                if(posHistory.length > 1000) posHistory.shift();
+            }
+            stats.position = data.position; //keep this more up to date than history
+            console.log(posHistory.length)
+            
         } 
         res.status(200).send('Heartbeat received');
     } else {
@@ -114,4 +123,20 @@ async function sendDiscordNotif(msg) {
 function getSpeedMPH(speedKMH) {
     if(isNaN(speedKMH)) return "N/A"
     return (speedKMH * 0.621371).toFixed(1);
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const earthRadius = 20902231.98757;  // Earth's radius in feet
+    const toRadians = Math.PI / 180.0;
+    const dLat = (lat2 - lat1) * toRadians;  // Latitude difference in radians
+    const dLon = (lon2 - lon1) * toRadians;  // Longitude difference in radians
+
+    // Haversine formula to calculate distance 
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * toRadians) * Math.cos(lat2 * toRadians) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = earthRadius * c;
+
+    return distance;
 }
