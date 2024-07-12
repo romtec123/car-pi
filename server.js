@@ -9,6 +9,7 @@ import { getConfig } from './configUtil.js'
 import fetch from 'node-fetch';
 
 let stats = {sensors: [{}, {}, {}, {}]}
+let posHistory = [] //memory leak
 const defaultConfig = {
     port: 3123,
     authToken: "",
@@ -29,11 +30,15 @@ app.use(bodyParser.json());
 app.post('/api/heartbeat', (req, res) => {
     const data = req.body;
     if(data.authToken === config.authToken){
-        if (data.status) stats.status = data.status
-        if (data.timestamp) stats.timestamp = data.timestamp
-        if (data.lastOpened && data.lastOpened != -1) stats.lastOpened = new Date(data.lastOpened).toLocaleString('en', {timeZone: 'America/Los_Angeles'})
-        if(data.temp) stats.lastTemp = data.temp
-        if(data.position) stats.position = data.position
+        if (data.status) stats.status = data.status;
+        if (data.timestamp) stats.timestamp = data.timestamp;
+        if (data.lastOpened && data.lastOpened != -1) stats.lastOpened = new Date(data.lastOpened).toLocaleString('en', {timeZone: 'America/Los_Angeles'});
+        if(data.temp) stats.lastTemp = data.temp;
+        if(data.position && !isNaN(data.position.lat)){
+            posHistory.push({time: Date.now(), position: data.position});
+            if(posHistory.length > 1000) posHistory.shift();
+            stats.position = data.position;
+        } 
         res.status(200).send('Heartbeat received');
     } else {
         res.status(401).send('unauthorized');
@@ -66,7 +71,7 @@ app.get('/', (req, res) => {
     data += `${stats.status ?? "n/a"}<br>Last Update: ${stats.timestamp ?? "n/a"}`
     data += `<br>Door Open: ${!isNaN(stats.sensors[0].doorValue) && stats.sensors[0].doorValue == 0 ? "Yes" : "No"}<br>Last Door Open: ${stats.lastOpened ?? "n/a"}<br>`
     data += `CPU Temp: ${stats.lastTemp ?? "n/a"}<br>`
-    
+
     if(stats.position) {
         data += `Speed: ${getSpeedMPH(stats.position.spd)} mph<br>`
         if(req.query.showPos == "true") data += `Position: ${stats.position.lat}, ${stats.position.lng}<br>`
@@ -101,7 +106,7 @@ async function sendDiscordNotif(msg) {
         }
 
     } catch (error) {
-        console.error('Error sending heartbeat:', error);
+        console.error('Error sending sensor activation:', error);
     }
 
 }
