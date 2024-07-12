@@ -37,7 +37,7 @@ app.post('/api/heartbeat', (req, res) => {
         if(data.position && !isNaN(data.position.lat)){
             let distance = -1;
             if(posHistory.length > 0) {
-                distance = calculateDistance(posHistory[posHistory.length-1].lat, posHistory[posHistory.length-1].lng, data.position.lat, data.position.lng);
+                distance = calculateDistance(posHistory[posHistory.length-1].position.lat, posHistory[posHistory.length-1].position.lng, data.position.lat, data.position.lng);
             }
             console.log(distance)
             if(posHistory.length < 1 || distance > 50) { //add to history if initial value or 50ft away from last position
