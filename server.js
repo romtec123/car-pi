@@ -9,7 +9,7 @@ import { getConfig } from './configUtil.js'
 import fetch from 'node-fetch';
 
 let stats = {sensors: [{}, {}, {}, {}]}
-let posHistory = [] //memory leak
+const posHistory = []
 const defaultConfig = {
     port: 3123,
     authToken: "",
@@ -25,6 +25,7 @@ const config = await getConfig("sv", defaultConfig)
 
 // Middleware to parse JSON
 app.use(bodyParser.json());
+app.set('view engine', 'ejs');
 
 // Heartbeat endpoint
 app.post('/api/heartbeat', (req, res) => {
@@ -90,6 +91,10 @@ app.get('/', (req, res) => {
     data += '<meta http-equiv="refresh" content="30">'
     res.send(data)
 })
+
+app.get('/map', (req, res) => {
+    res.render('map', { posHistory });
+});
 
 app.listen(config.port, () => {
     console.log(`Server is running on http://localhost:${config.port}`);
