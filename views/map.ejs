@@ -39,7 +39,7 @@
                 fillOpacity: 0.5,
                 radius: 5
             }).addTo(map)
-            .bindPopup(`Speed: ${spd} mph<br>Time: ${new Date(position.time).toLocaleString()}`);
+            .bindPopup(`Speed: ${spd} km/h<br>Time: ${new Date(position.time).toLocaleString()}`);
         });
 
         if (latlngs.length > 1) {
