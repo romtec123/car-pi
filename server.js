@@ -41,7 +41,7 @@ app.post('/api/heartbeat', (req, res) => {
                 distance = calculateDistance(posHistory[posHistory.length-1].position.lat, posHistory[posHistory.length-1].position.lng, data.position.lat, data.position.lng);
             }
             console.log(distance)
-            if(posHistory.length < 1 || distance > 50) { //add to history if initial value or 50ft away from last position
+            if(posHistory.length < 1 || distance > 100) { //add to history if initial value or 100ft away from last position
                 posHistory.push({time: Date.now(), position: data.position});
                 if(posHistory.length > 1000) posHistory.shift();
             }
@@ -66,8 +66,9 @@ app.post('/api/sensorActivate', (req, res) => {
             stats.sensors[data.sensorID-1].doorValue = data.doorValue
         }
         if (config.discordSensorNotif) {
-            let ts = Math.round(Date.now()/1000)
-            sendDiscordNotif(`Sensor ID \`${data.sensorID}\` is now \`${!isNaN(data.doorValue) && data.doorValue == 0 ? "OPEN" : "CLOSED"}\`\n<t:${ts}:R> <t:${ts}:f>`)
+            let dt = Date.now()
+            let ts = Math.round(dt/1000)
+            sendDiscordNotif(`Sensor ID \`${data.sensorID}\` is now \`${!isNaN(data.doorValue) && data.doorValue == 0 ? "OPEN" : "CLOSED"}\`\n<t:${ts}:R> <t:${ts}:f> [${dt}]`)
         }
         res.status(200).send('OK')
     } else {
