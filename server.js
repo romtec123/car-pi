@@ -5,7 +5,8 @@
 
 import express from 'express';
 import bodyParser from 'body-parser';
-import { getConfig } from './configUtil.js'
+import cookieParser from 'cookie-parser';
+import { getConfig } from './configUtil.js';
 import fetch from 'node-fetch';
 
 let stats = { sensors: [{}, {}, {}, {}] }
@@ -13,6 +14,7 @@ const posHistory = []
 const defaultConfig = {
     port: 3123,
     authToken: "",
+    password: "admin",  // Add a default password
     discordSensorNotif: false,
     discordWebHookURL: "",
 };
@@ -22,9 +24,65 @@ const app = express();
 // Read config file
 const config = await getConfig("sv", defaultConfig)
 
-// Middleware to parse JSON
+// Middleware to parse JSON, URL-encoded data, and cookies
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true })); // Add this middleware to handle form submissions
+app.use(cookieParser());
 app.set('view engine', 'ejs');
+
+// Middleware to check if the user is authenticated
+function isAuthenticated(req, res, next) {
+    const { carPiKey } = req.cookies; // Check for the carPiKey cookie
+
+    if (carPiKey === config.password) {
+        return next();
+    }
+
+    res.redirect('/login');
+}
+
+// Login endpoint
+app.get('/login', (req, res) => {
+    res.send(`
+        <form method="POST" action="/login">
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" required>
+            <button type="submit">Login</button>
+        </form>
+    `);
+});
+
+app.post('/login', (req, res) => {
+    const { password } = req.body;
+
+    if (password === config.password) {
+        res.cookie('carPiKey', password, { httpOnly: true }); // Set the carPiKey cookie
+        return res.redirect('/');
+    }
+
+    res.status(401).send('Unauthorized: Incorrect password');
+});
+
+// Protect the root and map endpoints
+app.get('/', isAuthenticated, (req, res) => {
+    let data = "***Car Pi Status***<br>Last Status: "
+    data += `${stats.status ?? "n/a"}<br>Last Update: ${stats.timestamp ?? "n/a"}`
+    data += `<br>Door Open: ${!isNaN(stats.sensors[0].doorValue) && stats.sensors[0].doorValue == 0 ? "Yes" : "No"}<br>Last Door Open: ${stats.lastOpened ?? "n/a"}<br>`
+    data += `CPU Temp: ${stats.lastTemp ?? "n/a"}<br>`
+
+    if (stats.position) {
+        data += `Speed: ${getSpeedMPH(stats.position.spd)} mph<br>`
+        if (req.query.showPos == "true") data += `Position: ${stats.position.lat}, ${stats.position.lng}<br>`
+        else data += `<a href="/?showPos=true">Show Position</a><br>`
+    }
+
+    data += '<meta http-equiv="refresh" content="30">'
+    res.send(data)
+});
+
+app.get('/map', isAuthenticated, (req, res) => {
+    res.render('map', { posHistory });
+});
 
 // Heartbeat endpoint
 app.post('/api/heartbeat', (req, res) => {
@@ -90,26 +148,6 @@ app.post('/api/sensorActivate', (req, res) => {
     }
 })
 
-app.get('/', (req, res) => {
-    let data = "***Car Pi Status***<br>Last Status: "
-    data += `${stats.status ?? "n/a"}<br>Last Update: ${stats.timestamp ?? "n/a"}`
-    data += `<br>Door Open: ${!isNaN(stats.sensors[0].doorValue) && stats.sensors[0].doorValue == 0 ? "Yes" : "No"}<br>Last Door Open: ${stats.lastOpened ?? "n/a"}<br>`
-    data += `CPU Temp: ${stats.lastTemp ?? "n/a"}<br>`
-
-    if (stats.position) {
-        data += `Speed: ${getSpeedMPH(stats.position.spd)} mph<br>`
-        if (req.query.showPos == "true") data += `Position: ${stats.position.lat}, ${stats.position.lng}<br>`
-        else data += `<a href="/?showPos=true">Show Position</a><br>`
-    }
-
-    data += '<meta http-equiv="refresh" content="30">'
-    res.send(data)
-})
-
-app.get('/map', (req, res) => {
-    res.render('map', { posHistory });
-});
-
 app.listen(config.port, () => {
     console.log(`Server is running on http://localhost:${config.port}`);
 });
@@ -121,7 +159,6 @@ async function sendDiscordNotif(msg) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                // the username to be displayed
                 username: 'Car Door Watchdog',
                 content:
                   `@everyone\n***DOOR SENSOR TRIGGERED***\nMessage: ${msg}`,
