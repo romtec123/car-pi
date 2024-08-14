@@ -21,6 +21,7 @@ let defaultConfig = {
     gpioPin2: 539,
     gpioPin3: 534,
     gpioPin4: 535,
+    lowDataMode: false,  // Added lowDataMode configuration
 };
 // gpio pin numbers based on output from: cat /sys/kernel/debug/gpio
 
@@ -96,29 +97,33 @@ async function sendDataWithCache(data, endpoint) {
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify([data]) // Wrap in array to ensure format consistency
         });
 
         if (!response.ok) {
             throw new Error(`Server error: ${response.statusText}`);
         }
 
-        // If the data is successfully sent, try sending cached data
+        // If the data is successfully sent, try sending cached data in a single request
         if (fs.existsSync(cacheFilePath)) {
             try {
                 const cacheRaw = fs.readFileSync(cacheFilePath, 'utf8');
                 const cachedData = JSON.parse(cacheRaw);
 
-                for (const cachedItem of cachedData) {
-                    await fetch(url, {
+                if (cachedData.length > 0) {
+                    const cacheResponse = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(cachedItem)
+                        body: JSON.stringify(cachedData)
                     });
-                }
 
-                // Clear cache after successful transmission
-                fs.unlinkSync(cacheFilePath);
+                    if (cacheResponse.ok) {
+                        // Clear cache after successful transmission
+                        fs.unlinkSync(cacheFilePath);
+                    } else {
+                        throw new Error(`Server error: ${cacheResponse.statusText}`);
+                    }
+                }
             } catch (err) {
                 console.error('Error processing cached data:', err);
             }
@@ -136,7 +141,7 @@ async function sendDataWithCache(data, endpoint) {
 
 async function sendHeartbeat() {
     let temp = 0;
-    if (fs.existsSync(tempPath)) {
+    if (!config.lowDataMode && fs.existsSync(tempPath)) { // Only read temp if not in lowDataMode
         try {
             const tempDataRaw = fs.readFileSync(tempPath, 'utf8');
             temp = parseFloat(tempDataRaw) / 1000;
@@ -163,14 +168,14 @@ async function sendHeartbeat() {
         }
     }
 
+    // Prepare the statistics object, reduce the size in lowDataMode
     const statistics = {
         authToken: config.authToken,
-        timestamp: new Date().toLocaleString('en', { timeZone: 'America/Los_Angeles' }),
+        timestamp: config.lowDataMode ? Date.now() : new Date().toLocaleString('en', { timeZone: 'America/Los_Angeles' }),
         status: 'ALIVE',
         doorValue: isNaN(doorValue) ? "Unknown" : doorValue,
-        lastOpened,
-        temp,
-        position,
+        position: position, // Always send position
+        temp: config.lowDataMode ? undefined : temp, // Remove temp in lowDataMode
     };
 
     try {
@@ -181,7 +186,7 @@ async function sendHeartbeat() {
 }
 
 // Call the function to send the heartbeat
-setInterval(sendHeartbeat, config.heartbeatTimerMS);
+setInterval(sendHeartbeat, config.lowDataMode ? config.heartbeatTimerMS * 2 : config.heartbeatTimerMS); // Increase interval in lowDataMode
 
 async function sendSensorAlert(data) {
     if (!data || !data.sensorID || !data.authToken) return;
@@ -207,7 +212,7 @@ async function shutdown() {
 
     const shutdownData = {
         authToken: config.authToken,
-        timestamp: new Date().toLocaleString('en', { timeZone: 'America/Los_Angeles' }),
+        timestamp: config.lowDataMode ? Date.now() : new Date().toLocaleString('en', { timeZone: 'America/Los_Angeles' }),
         status: 'SHUTTING DOWN',
     };
 
@@ -215,7 +220,7 @@ async function shutdown() {
         const response = await fetch(config.serverUrl + "/api/heartbeat", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(shutdownData)
+            body: JSON.stringify([shutdownData]) // Wrap in array to ensure format consistency
         }).catch(err => console.log('Could not POST heartbeat:', err));
 
         if (!response.ok) {
@@ -237,11 +242,20 @@ async function shutdown() {
             const cacheRaw = fs.readFileSync(cacheFilePath, 'utf8');
             const cachedData = JSON.parse(cacheRaw);
 
-            for (const cachedItem of cachedData) {
-                await sendDataWithCache(cachedItem, cachedItem.endpoint || "/api/heartbeat");
-            }
+            if (cachedData.length > 0) {
+                const cacheResponse = await fetch(config.serverUrl + "/api/heartbeat", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cachedData)
+                });
 
-            fs.unlinkSync(cacheFilePath);
+                if (cacheResponse.ok) {
+                    // Clear cache after successful transmission
+                    fs.unlinkSync(cacheFilePath);
+                } else {
+                    throw new Error(`Server error: ${cacheResponse.statusText}`);
+                }
+            }
         } catch (err) {
             console.error('Error processing startup cache:', err);
         }
