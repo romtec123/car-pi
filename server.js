@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // Add this middleware to ha
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 
-// Middleware to check if the user is authenticated
+// Middleware to check if the user is authenticated for the web pages
 function isAuthenticated(req, res, next) {
     const { carPiKey } = req.cookies; // Check for the carPiKey cookie
 
@@ -84,7 +84,7 @@ app.get('/map', isAuthenticated, (req, res) => {
     res.render('map', { posHistory });
 });
 
-// Heartbeat endpoint
+// API endpoints (do not require the cookie-based authentication)
 app.post('/api/heartbeat', (req, res) => {
     const dataArray = req.body;
 

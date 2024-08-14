@@ -81,7 +81,9 @@ function cacheData(data) {
         }
     }
 
-    cachedData.push(data);
+    // Remove authToken before caching
+    const { authToken, ...dataWithoutToken } = data;
+    cachedData.push(dataWithoutToken);
 
     try {
         fs.writeFileSync(cacheFilePath, JSON.stringify(cachedData), 'utf8');
@@ -92,6 +94,9 @@ function cacheData(data) {
 
 async function sendDataWithCache(data, endpoint) {
     const url = config.serverUrl + endpoint;
+
+    // Ensure the authToken is included from config
+    data.authToken = config.authToken;
 
     try {
         const response = await fetch(url, {
@@ -111,10 +116,16 @@ async function sendDataWithCache(data, endpoint) {
                 const cachedData = JSON.parse(cacheRaw);
 
                 if (cachedData.length > 0) {
+                    // Add authToken to each cached item before sending
+                    const cachedDataWithToken = cachedData.map(item => ({
+                        ...item,
+                        authToken: config.authToken
+                    }));
+
                     const cacheResponse = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(cachedData)
+                        body: JSON.stringify(cachedDataWithToken)
                     });
 
                     if (cacheResponse.ok) {
@@ -132,7 +143,7 @@ async function sendDataWithCache(data, endpoint) {
     } catch (err) {
         console.log('Network error, caching data:', err);
         try {
-            cacheData(data);
+            cacheData(data);  // Cache the data without the authToken
         } catch (cacheErr) {
             console.error('Error caching data:', cacheErr);
         }
