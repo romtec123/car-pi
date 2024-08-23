@@ -10,6 +10,8 @@ import { getConfig } from './configUtil.js';
 
 let lastOpened = -1;
 let positionHistory = [];
+let lastPosition = null;
+
 let defaultConfig = {
     authToken: "",
     serverUrl: 'http://localhost:3123',
@@ -104,10 +106,9 @@ function cachePosition() {
         return;
     }
 
-    if (positionHistory.length > 0) {
-        const lastPosition = positionHistory[positionHistory.length - 1];
+    // Check against the last cached position
+    if (lastPosition) {
         const distance = calculateDistance(lastPosition.lat, lastPosition.lng, position.lat, position.lng);
-        
         if (distance < 100) {
             console.log('Position too close to last position, not caching:', distance, 'feet');
             return;
@@ -115,6 +116,7 @@ function cachePosition() {
     }
 
     positionHistory.push(position);
+    lastPosition = position; // Update the last valid position
     console.log('Position cached:', position);
 
     if (positionHistory.length > 1000) positionHistory.shift();
