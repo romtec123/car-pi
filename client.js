@@ -27,7 +27,13 @@ let defaultConfig = {
     gpioPin4: 535,
     lowDataMode: false,
 };
-
+/*
+gpio pin numbers based on output from: cat /sys/kernel/debug/gpio
+    sensor1 = gpio 11
+    sensor2 = gpio 13
+    sensor3 = gpio 15
+    sensor4 = gpio 16
+*/
 const config = await getConfig("cl", defaultConfig);
 
 // Prevent calling onoff on dev env
@@ -151,7 +157,7 @@ async function sendHeartbeat() {
 
     const statistics = {
         authToken: config.authToken,
-        timestamp: config.lowDataMode ? Date.now() : new Date().toLocaleString('en', { timeZone: 'America/Los_Angeles' }),
+        timestamp: new Date().toLocaleString('en', { timeZone: 'America/Los_Angeles' }),
         status: 'ALIVE',
         doorValue: isNaN(doorValue) ? "Unknown" : doorValue,
         positions: positionHistory, // Send the cached positions
@@ -220,7 +226,7 @@ async function shutdown() {
 
     const shutdownData = {
         authToken: config.authToken,
-        timestamp: config.lowDataMode ? Date.now() : new Date().toLocaleString('en', { timeZone: 'America/Los_Angeles' }),
+        timestamp: new Date().toLocaleString('en', { timeZone: 'America/Los_Angeles' }),
         status: 'SHUTTING DOWN',
     };
 
