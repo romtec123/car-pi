@@ -81,7 +81,7 @@ app.get('/', isAuthenticated, (req, res) => {
 });
 
 app.get('/map', isAuthenticated, (req, res) => {
-    res.render('map', { posHistory });
+    res.render('map', { posHistory, currentPos: posHistory[posHistory.length - 1] });
 });
 
 // API endpoints (do not require the cookie-based authentication)

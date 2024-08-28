@@ -217,6 +217,7 @@ process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
 async function shutdown() {
+
     if (useGpio) {
         sensor1.unexport();
         sensor2.unexport();
@@ -224,27 +225,7 @@ async function shutdown() {
         sensor4.unexport();
     }
 
-    const shutdownData = {
-        authToken: config.authToken,
-        timestamp: new Date().toLocaleString('en', { timeZone: 'America/Los_Angeles' }),
-        status: 'SHUTTING DOWN',
-    };
-
-    try {
-        const response = await fetch(config.serverUrl + "/api/heartbeat", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify([shutdownData])
-        });
-
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.statusText}`);
-        }
-
-    } catch (error) {
-        console.error('Error sending shutdown heartbeat:', error);
-    }
-
     console.log('Exiting...');
     process.exit();
+    
 };

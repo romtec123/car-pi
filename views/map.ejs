@@ -30,14 +30,20 @@
 
         const latlngs = [];
 
-        posHistory.forEach(position => {
+        posHistory.forEach((position, index) => {
             const { lat, lng, spd } = position.position;
             latlngs.push([lat, lng]);
+
+            // Differentiate the last position with a different style
+            const isLastPosition = index === posHistory.length - 1;
+            const markerColor = isLastPosition ? 'green' : 'blue';
+            const fillColor = isLastPosition ? '#3f0' : '#30f';
+
             L.circle([lat, lng], {
-                color: 'blue',
-                fillColor: '#30f',
-                fillOpacity: 0.5,
-                radius: 5
+                color: markerColor,
+                fillColor: fillColor,
+                fillOpacity: 0.8,
+                radius: 7
             }).addTo(map)
             .bindPopup(`Speed: ${spd} km/h<br>Time: ${new Date(position.time).toLocaleString()}`);
         });
