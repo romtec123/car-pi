@@ -6,14 +6,10 @@ The codebase is pretty scattered and unorganized while I prototype, it will be i
 # Implementation
 Inside of a project box, I have the following items:
 
-Raspberry Pi 4 Model B
+Raspberry Pi Zero W w/ Waveshare SIM7600G-H 4G HAT
 
 12v battery voltage cutoff to prevent draining my battery
 
 12v -> 3.3v 4 channel opto-isolator board for signalling
 
 12v -> 5v buck converter for power
-
-Wifi card with SMA connector and high gain antenna
-
-![setup](https://i.imgur.com/1LOmGVK.jpeg)
