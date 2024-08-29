@@ -1,6 +1,8 @@
 # car-pi
 Some scripts and utilities for a raspberry pi that acts as a vehicle alarm system.
 
+In it's current state this project provides a web page and map to monitor the status and position of the vehicle with a door sensor that will notify when the door is opened via a Discord webhook.
+
 The codebase is pretty scattered and unorganized while I prototype, it will be improved at a later time
 
 # Implementation
