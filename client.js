@@ -29,10 +29,10 @@ let defaultConfig = {
 };
 /*
 gpio pin numbers based on output from: cat /sys/kernel/debug/gpio
-    sensor1 = gpio 11
-    sensor2 = gpio 13
-    sensor3 = gpio 15
-    sensor4 = gpio 16
+    sensor1 = gpio pin 11 = GPIO 17
+    sensor2 = gpio pin 13 = GPIO 27
+    sensor3 = gpio pin 15 = GPIO 22
+    sensor4 = gpio pin 16 = GPIO 23
 */
 const config = await getConfig("cl", defaultConfig);
 
