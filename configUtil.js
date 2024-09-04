@@ -18,13 +18,14 @@ export async function getConfig(filename, defaultConfig) {
     // Ensure config file exists, if not create with default config and exit
     if (!fs.existsSync(configFilePath)) {
         fs.writeFileSync(configFilePath, JSON.stringify(defaultConfig, null, 2));
-        console.log(`Default config file created at ${configFilePath}. Please edit the file and restart the server.`);
+        console.log(`Default config file created at ${configFilePath}. Please edit the file and restart.`);
         process.exit(0);
     }
 
     // Read config file
     let config = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
 
+    //Add new settings to config file
     for (var key in defaultConfig) {
         if (!config.hasOwnProperty(key)) {
           config[key] = defaultConfig[key]
