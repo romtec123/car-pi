@@ -20,6 +20,7 @@ const defaultConfig = {
 };
 
 const app = express();
+app.use(express.static('public'));
 
 // Read config file
 const config = await getConfig("sv", defaultConfig);
@@ -43,13 +44,7 @@ function isAuthenticated(req, res, next) {
 
 // Login endpoint
 app.get('/login', (req, res) => {
-    res.send(`
-        <form method="POST" action="/login">
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" required>
-            <button type="submit">Login</button>
-        </form>
-    `);
+    res.render('login', { authenticated: false });
 });
 
 app.post('/login', (req, res) => {
@@ -63,25 +58,30 @@ app.post('/login', (req, res) => {
     res.status(401).send('Unauthorized: Incorrect password');
 });
 
-// Protect the root and map endpoints
-app.get('/', isAuthenticated, (req, res) => {
-    let data = "***Car Pi Status***<br>Last Status: "
-    data += `${stats.status ?? "n/a"}<br>Last Update: ${stats.timestamp ?? "n/a"}`
-    data += `<br>Door Open: ${!isNaN(stats.sensors[0].doorValue) && stats.sensors[0].doorValue == 0 ? "Yes" : "No"}<br>Last Door Open: ${stats.lastOpened ?? "n/a"}<br>`
-    data += `CPU Temp: ${stats.lastTemp ?? "n/a"}<br>`
-
-    if (stats.position) {
-        data += `Speed: ${getSpeedMPH(stats.position.spd)} mph<br>`
-        if (req.query.showPos == "true") data += `Position: ${stats.position.lat}, ${stats.position.lng}<br>`
-        else data += `<a href="/?showPos=true">Show Position</a><br>`
-    }
-
-    data += '<meta http-equiv="refresh" content="30">'
-    res.send(data);
+// Logout endpoint
+app.get('/logout', (req, res) => {
+    res.clearCookie('carPiKey'); // Remove the authentication cookie
+    res.redirect('/login');      // Redirect to the login page
 });
 
+// Home page (protected by authentication)
+app.get('/', isAuthenticated, (req, res) => {
+    const homeData = {
+        status: stats.status ?? "n/a",
+        timestamp: stats.timestamp ?? "n/a",
+        doorValue: !isNaN(stats.sensors[0].doorValue) && stats.sensors[0].doorValue == 0 ? "Yes" : "No",
+        lastOpened: stats.lastOpened ?? "n/a",
+        lastTemp: stats.lastTemp ?? "n/a",
+        speed: stats.position ? getSpeedMPH(stats.position.spd) : "N/A",
+        position: stats.position ?? null,
+        showPos: req.query.showPos === "true",
+    };
+    res.render('home', { homeData, authenticated: true });
+});
+
+// Map page (protected by authentication)
 app.get('/map', isAuthenticated, (req, res) => {
-    res.render('map', { posHistory, currentPos: posHistory[posHistory.length - 1] });
+    res.render('map', { posHistory, currentPos: posHistory[posHistory.length - 1], authenticated: true });
 });
 
 // API endpoints (do not require the cookie-based authentication)

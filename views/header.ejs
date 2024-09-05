@@ -1,0 +1,14 @@
+<header>
+    <nav>
+        <ul>
+            <li class="carpi-link"><a href="https://github.com/romtec123/car-pi" target="_blank" style="font-weight: bold;">CarPi</a></li>
+            <li><a href="/">Home</a></li>
+            <li><a href="/map">Map</a></li>
+            <% if (authenticated) { %>
+                <li><a href="/logout">Logout</a></li>
+            <% } else { %>
+                <li><a href="/login">Login</a></li>
+            <% } %>
+        </ul>
+    </nav>
+</header>

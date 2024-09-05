@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        /* Center the login form */
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            background-color: #1a1a1a; /* Darker background for the form box */
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Style the form fields */
+        .login-container input[type="text"],
+        .login-container input[type="password"],
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+
+        /* Input background and text color */
+        .login-container input {
+            background-color: #2c2c2c;
+            color: #f0f0f0;
+        }
+
+        /* Style the submit button */
+        .login-container button {
+            background-color: #4caf50;
+            color: white;
+            cursor: pointer;
+        }
+
+        .login-container button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <%- include('header') %>
+
+    <div class="login-container">
+        <h2 style="text-align: center; color: #f0f0f0;">Login</h2>
+        <form method="POST" action="/login">
+            <label for="username" style="color: #f0f0f0;">Username:</label>
+            <input type="text" name="username" id="username" placeholder="Username" required>
+
+            <label for="password" style="color: #f0f0f0;">Password:</label>
+            <input type="password" name="password" id="password" placeholder="Password" required>
+
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <%- include('footer') %>
+</body>
+</html>

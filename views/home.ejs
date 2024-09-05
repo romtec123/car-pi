@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Car Pi Home</title>
+    <link rel="stylesheet" href="/styles.css"> <!-- Link to the CSS file -->
+</head>
+<body>
+    <%- include('header') %>
+
+    <main class="content-container">
+        <h1>Car Pi Status</h1>
+        <p><strong>Last Status:</strong> <%= homeData.status %></p>
+        <p><strong>Last Update:</strong> <%= homeData.timestamp %></p>
+        <p><strong>Door Open:</strong> <%= homeData.doorValue %></p>
+        <p><strong>Last Door Open:</strong> <%= homeData.lastOpened %></p>
+        <p><strong>CPU Temp:</strong> <%= homeData.lastTemp %>°C</p>
+        <p><strong>Speed:</strong> <%= homeData.speed %> mph</p>
+
+        <% if (homeData.position && homeData.showPos) { %>
+            <p><strong>Position:</strong> Lat: <%= homeData.position.lat %>, Lng: <%= homeData.position.lng %></p>
+        <% } else if (homeData.position) { %>
+            <p><a href="/?showPos=true">Show Position</a></p>
+        <% } %>
+    </main>
+
+    <%- include('footer') %>
+</body>
+</html>
